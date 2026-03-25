@@ -122,7 +122,10 @@ Metrics Assembler detects `metersPerUnit` mismatches at reference
 boundaries and authors **corrective `xformOps`** — a scale (and
 optionally rotation for up-axis) on the referencing prim. It also
 handles a subset of physics attributes via registered rules where
-the physics schema provides unit exponent annotations.
+the physics schema provides unit exponent annotations. Corrections
+are written to a dedicated sublayer (identified by the `metrics:`
+prefix), which Kit's Layer widget hides by default to keep the layer
+stack clean.
 
 **Strengths:**
 - Proven in production at factory scale
