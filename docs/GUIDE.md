@@ -245,8 +245,57 @@ UnitsLens.clear_cache()
 
 ```python
 MetricsAssembler.audit_stage(stage) → [dict, ...]       # dry run
-MetricsAssembler.correct_stage(stage) → [dict, ...]     # apply corrections
+MetricsAssembler.correct_stage(stage) → [dict, ...]     # corrective xformOps at boundaries
 MetricsAssembler.correct_reference_boundary(prim) → dict | None
+MetricsAssembler.bake_to_units(stage, target_mpu=1.0, target_kpu=1.0) → dict
+    # Bake all unit-bearing values as overs in target units
+```
+
+### bake_to_units vs correct_stage
+
+Both are non-destructive. They solve different problems:
+
+`correct_stage()` adds a **single corrective `xformOp:scale`** at each
+reference boundary. Cheap (one op per boundary), but only fixes where
+things appear — density, gravity, velocity, camera attributes etc.
+are still in the source units. Downstream consumers need `UnitsLens`
+to read them correctly.
+
+`bake_to_units()` writes **converted values for every unit-bearing
+attribute** as overs in a session sublayer. Expensive (one over per
+attribute), but after baking, any consumer can read correct values
+with plain `attr.Get()` — no `UnitsLens` required.
+
+| | `correct_stage()` | `bake_to_units()` |
+|---|---|---|
+| What it writes | One `xformOp:scale` per boundary | Over for every unit-bearing attr |
+| Covers transforms | ✅ | ✅ |
+| Covers derived quantities | ❌ (need UnitsLens) | ✅ |
+| Plain `attr.Get()` returns correct value | ❌ | ✅ |
+| Cost | One op per boundary | One over per attr per prim |
+| Consumers need to be unit-aware | Yes | No |
+| Reversible | Delete the correction op | Delete the over layer |
+
+**Example: bake a mm stage to meters**
+
+```python
+from omni.units_api._lib import MetricsAPI, MetricsAssembler
+
+stage = Usd.Stage.Open("factory_mm.usda")  # metersPerUnit = 0.001
+
+# Declare source units on root
+MetricsAPI.apply(stage.GetDefaultPrim(), meters_per_unit=0.001)
+
+# Bake everything to meters — creates an override layer
+result = MetricsAssembler.bake_to_units(stage, target_mpu=1.0)
+print(f"Converted {result['attrs_converted']} attributes")
+print(f"Including {result['time_samples_converted']} time samples")
+
+# Now any consumer reads correct values with plain USD
+density = stage.GetPrimAtPath("/Body").GetAttribute("physics:density").Get()
+# → 7800.0 (kg/m³) — no UnitsLens needed
+
+# Original layer untouched — remove the over layer to revert
 ```
 
 ### PerAttributeUnits
