@@ -1,0 +1,26 @@
+[package]
+title = "Units API"
+description = "Unit-aware reading and authoring of USD attribute values for OpenUSD"
+version = "0.1.0"
+category = "Simulation"
+keywords = ["units", "metrics", "conversion", "physics", "USD"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = ""
+icon = ""
+
+[dependencies]
+"omni.usd" = {}
+
+[[python.module]]
+name = "omni.units_api"
+
+[[test]]
+dependencies = [
+    "omni.kit.test",
+]
+
+args = [
+    "--no-window",
+    "--/app/asyncRendering=false",
+]
