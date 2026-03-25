@@ -114,18 +114,19 @@ kit-app-template/
 ## Execution Steps
 
 1. ~~Save plan~~ ✅
-2. Create GitHub repo `jensjebens/omni-units-api`
-3. Clone KAT, scaffold the extension with `repo.sh template new` → Extension → Basic Python
-4. Vendor the POC library into the extension (or symlink during dev)
-5. Author test stages programmatically in test setup + pre-authored USD files for complex scenarios
-6. Implement Phase 1 tests
-7. Implement Phase 2 tests
-8. Implement Phase 3 tests
-9. Implement Phase 4 tests
-10. Implement Phase 5 tests
-11. Implement Phase 6 tests
-12. Run headless via `repo.sh test`
-13. Optional: Add a simple UI panel for interactive audit/correct
+2. ~~Create GitHub repo `jensjebens/omni-units-api`~~ ✅ https://github.com/jensjebens/omni-units-api
+3. ~~Scaffold Kit extension structure~~ ✅ (manual, following KAT conventions)
+4. ~~Vendor the POC library into the extension~~ ✅ (`_lib/` directory)
+5. ~~Implement Phase 1 tests~~ ✅ (3 test classes, 6 tests)
+6. ~~Implement Phase 2 tests~~ ✅ (4 test classes, 4 tests)
+7. ~~Implement Phase 3 tests~~ ✅ (5 test classes, 5 tests)
+8. ~~Implement Phase 4 tests~~ ✅ (4 test classes, 5 tests)
+9. ~~Implement Phase 5 tests~~ ✅ (4 test classes, 4 tests)
+10. ~~Implement Phase 6 tests~~ ✅ (4 test classes, 4 tests)
+11. Run headless via `repo.sh test` on a Kit-capable machine ⬜
+12. Fix any Kit-specific issues discovered during test run ⬜
+13. Author pre-built USD test stage files (optional — tests create stages programmatically) ⬜
+14. Optional: Add a simple UI panel for interactive audit/correct ⬜
 
 ## Success Criteria
 
