@@ -107,7 +107,9 @@ class TestBezierSplineConversion(omni.kit.test.AsyncTestCase):
 
         cam = stage.DefinePrim("/Camera", "Camera")
         MetricsAPI.apply(cam, meters_per_unit=0.01)
-        fd_attr = cam.CreateAttribute("focusDistance", Sdf.ValueTypeNames.Float)
+
+        # Use double-typed attribute so spline knots (which default to double) match
+        fd_attr = cam.CreateAttribute("testFocusDistance", Sdf.ValueTypeNames.Double)
 
         # Create a bezier spline: 100cm at frame 1, 500cm at frame 24
         spline = Ts.Spline()
@@ -133,23 +135,30 @@ class TestBezierSplineConversion(omni.kit.test.AsyncTestCase):
 
         fd_attr.SetSpline(spline)
 
-        converted = UnitsLens.get_spline(fd_attr, target_mpu=1.0)
-        self.assertIsNotNone(converted)
+        # Register testFocusDistance as L1 (same as focusDistance) for this test
+        from omni.units_api._lib.dimensions import DIMENSION_REGISTRY, Dimension
+        DIMENSION_REGISTRY["testFocusDistance"] = Dimension(L=1)
 
-        knots = list(converted.GetKnots().keys())
-        self.assertEqual(len(knots), 2)
+        try:
+            converted = UnitsLens.get_spline(fd_attr, target_mpu=1.0)
+            self.assertIsNotNone(converted)
 
-        # Values scaled: 100cm → 1m, 500cm → 5m
-        k1_conv = converted.GetKnot(1.0)
-        k2_conv = converted.GetKnot(24.0)
-        self.assertAlmostEqual(k1_conv.GetValue(), 1.0, places=4)
-        self.assertAlmostEqual(k2_conv.GetValue(), 5.0, places=4)
+            knots = list(converted.GetKnots().keys())
+            self.assertEqual(len(knots), 2)
 
-        # Slopes scaled: 20 cm/frame → 0.2 m/frame
-        self.assertAlmostEqual(k1_conv.GetPostTanSlope(), 0.2, places=4)
+            # Values scaled: 100cm → 1m, 500cm → 5m
+            k1_conv = converted.GetKnot(1.0)
+            k2_conv = converted.GetKnot(24.0)
+            self.assertAlmostEqual(k1_conv.GetValue(), 1.0, places=4)
+            self.assertAlmostEqual(k2_conv.GetValue(), 5.0, places=4)
 
-        # Widths preserved (time units, not spatial)
-        self.assertAlmostEqual(k1_conv.GetPostTanWidth(), 5.0, places=4)
+            # Slopes scaled: 20 cm/frame → 0.2 m/frame
+            self.assertAlmostEqual(k1_conv.GetPostTanSlope(), 0.2, places=4)
+
+            # Widths preserved (time units, not spatial)
+            self.assertAlmostEqual(k1_conv.GetPostTanWidth(), 5.0, places=4)
+        finally:
+            del DIMENSION_REGISTRY["testFocusDistance"]
 
     async def tearDown(self):
         UnitsLens.clear_cache()
