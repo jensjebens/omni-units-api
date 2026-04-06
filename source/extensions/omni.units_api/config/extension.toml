@@ -11,6 +11,8 @@ icon = ""
 
 [dependencies]
 "omni.usd" = {}
+"omni.ui" = {optional = true}
+"omni.kit.ui" = {optional = true}
 
 [[python.module]]
 name = "omni.units_api"
